@@ -1,7 +1,5 @@
-# python-template
-This is a template for Python projects.
-
-Simply add your Python script(s), modules, tests etc. and you're all good!
+# A-Z List
+Add the harvesting summary to the folder and run the process.py script
 
 ## A note on requirements.txt
 `requirements.txt` is a file to help other developers know what dependencies your application has.
