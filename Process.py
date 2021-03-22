@@ -61,8 +61,7 @@ def date_range(row):
     return False
 
 ####Load and clean Harvesting Summary
-new_sites = pd.read_csv(f'{metadata_folder}Harvesting Summary.csv').head(20)
-new_sites.drop_duplicates(subset='textbox20', inplace=True)
+new_sites = pd.read_csv(f'{metadata_folder}Harvesting Summary.csv')
 new_sites['Additional Information'] = ''
 new_sites.rename(columns={'textbox20': 'URL', 'textbox22': 'Site Name', 'textbox26': 'Archivist Notes', 'Dept_acronym': 'Department'}, inplace=True)
 new_sites['Archive URL'] = new_sites['URL'].apply(UKGWA_URL)
@@ -71,8 +70,9 @@ new_sites['Archive URL'] = new_sites['URL'].apply(UKGWA_URL)
 ####CHECK URLs
 frames = [new_sites] + [pd.read_csv(file) for file in os.listdir() if 'not_active' in file]
 to_check = pd.concat(frames, ignore_index=True)
+to_check.drop_duplicates(subset='URL', inplace=True)
 tqdm.pandas(desc='Checking URLs against Archive')       #Creates tqdm instance for progress bar
-to_check['Date Range'] = to_check.progress_apply(date_range, axis = 1)
+to_check['Date Range'] = to_check.progress_apply(date_range, axis=1)
 to_check.to_csv(f'{metadata_folder}checked.csv', index=False)
 
 #####CREATE NOT ACTIVE CSV
@@ -81,7 +81,7 @@ unactive.to_csv('not_active.csv', index=False)
 
 ######CREATE ACTIVE URLs XLSX
 active = to_check[to_check['Date Range'] != False]
-active = active[['Archive URL', 'Site Name', 'Date Range', 'Additional Information', 'Archivist Notes', 'Department']]
+active = active[['Archive URL', 'Site Name', 'Date Range', 'Additional Information', 'Archivist Notes', 'Department']]  ####define columns
 wb = pxl.Workbook()
 ws = wb.active
 for r in dataframe_to_rows(active, index=False, header=True):
@@ -120,8 +120,9 @@ input(f'Add categories to sites in {folder}Add Categories.xlsx\nWhen finished, c
 input('Re-hit enter to confirm:>')
 
 ###ADD NEW LIST TO FULL LIST
+copy('Full List.xlsx', f'{metadata_folder}Full List before new entries.xlsx')
 active = pd.read_excel(f'{folder}Add Categories.xlsx')
-active.drop(['Additional Information', 'Archivist Notes'], axis=1)
+#active.drop(['Additional Information', 'Archivist Notes'], axis=1, inplace = True)
 frames = [pd.read_excel(f'Full List.xlsx')] + [active]
 full_list = pd.concat(frames, ignore_index=True)
 full_list.drop_duplicates(subset='Archive URL', keep='last')
@@ -135,7 +136,6 @@ full_list = full_list.reset_index(drop=True)
 #####Wrtie new full list
 wb = pxl.Workbook()
 ws = wb.active
-
 for r in dataframe_to_rows(full_list, index=False, header=True):
     ws.append(r)
 
@@ -172,13 +172,12 @@ with open(f'{folder}A-Z list HTML.txt', 'w', encoding='utf-8') as dest:
     dest.write(text)
 
 
-# full_list['html'] = full_list.apply(lambda row: line.replace('{url}', row['Archive URL']).repalce('{site_name}', row['Site Name']))
-#
-# full_list['html'] = [line.replace('{url}', x['Archive URL']).repalce('{site_name}', x['Site Name']) for x in full_list]
+final = input('You can now check the results. If you\'d like to undo the process, type \'undo\'')
 
-#
-# input('check results')
+if final.lower() == 'undo':
+    os.remove('Full List.xlsx')
+    copy(metadata_folder + 'Harvesting Summary.csv', 'Harvesting Summary.csv')
+    copy(metadata_folder + 'Full List.xlsx', 'Full List.xlsx')
+    os.remove('not_active.csv')
+    rmtree(folder)
 #clean
-# copy(metadata_folder + 'Harvesting Summary.csv', 'Harvesting Summary.csv')
-# os.remove('not_active.csv')
-# rmtree(folder)
