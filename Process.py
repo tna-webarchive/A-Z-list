@@ -178,6 +178,5 @@ if final.lower() == 'undo':
     os.remove('Full List.xlsx')
     copy(metadata_folder + 'Harvesting Summary.csv', 'Harvesting Summary.csv')
     copy(metadata_folder + 'Full List.xlsx', 'Full List.xlsx')
-    os.remove('not_active.csv')
     rmtree(folder)
 #clean
