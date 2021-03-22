@@ -185,3 +185,5 @@ else:
     os.system(f'git commit -m "Updated for {folder[16:]}"')
     os.system('git push')
     print('Process finished')
+
+#test
