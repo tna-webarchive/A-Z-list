@@ -180,3 +180,8 @@ if final.lower() == 'undo':
     copy(metadata_folder + 'Full List.xlsx', 'Full List.xlsx')
     rmtree(folder)
 #clean
+else:
+    os.system('git add "Full List.xlsx" not_active.csv')
+    os.system(f'git commit -m "Updated for {folder[16:]}"')
+    os.system('git push')
+    print('Process finished')
