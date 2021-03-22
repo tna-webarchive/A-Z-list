@@ -1,6 +1,4 @@
-re
 pandas
 tqdm
 openpyxl
-urllib
 bs4
