@@ -172,16 +172,16 @@ with open(f'{folder}A-Z list HTML.txt', 'w', encoding='utf-8') as dest:
     dest.write(text)
 
 
-final = input('You can now check the results. If you\'d like to undo the process, type \'undo\'')
+final = input('You can now check the results. If you\'d like to undo the process, type \'undo\':')
 
 if final.lower() == 'undo':
     os.remove('Full List.xlsx')
     copy(metadata_folder + 'Harvesting Summary.csv', 'Harvesting Summary.csv')
-    copy(metadata_folder + 'Full List.xlsx', 'Full List.xlsx')
+    copy(metadata_folder + 'Full List before new entries.xlsx', 'Full List.xlsx')
     rmtree(folder)
 #clean
 else:
     os.system('git add "Full List.xlsx" not_active.csv')
-    os.system(f'git commit -m "Updated for {folder[16:]}"')
+    os.system(f'git commit -m "Updated for {folder[16:-1]}"')
     os.system('git push')
     print('Process finished')
