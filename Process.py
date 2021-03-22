@@ -14,7 +14,11 @@ metadata_folder = folder+'metadata/'
 
 #SET UP
 while not os.path.isfile('Harvesting Summary.csv'):
-    print('Unable to locate Harvesting Summary.csv file.')
+    new_sites = input('Unable to locate Harvesting Summary.csv file. Are you entering new sites?:>[y/n]')
+    if new_sites.lower() == 'n':
+        with open('Harvesting Summary.csv', 'w') as dest:
+            dest.write('Dept_id1,Domain_id,Dept_Group_id1,Textbox13,domain_Url1,Dept_acronym,textbox24,textbox22,textbox20,Domain_state_name1,Domain_TNA_scope_name,Crawl_frequency,Crawl_next,Crawl_exception,crawl_id,AutoCrawl,special_instructions,textbox26,textbox28,Closure_date')
+        break
     input(f'Please add Harvesting Summary.csv to folder {folder} and hit enter:>')
 
 if not os.path.isdir(folder):
@@ -120,18 +124,25 @@ input(f'Add categories to sites in {folder}Add Categories.xlsx\nWhen finished, c
 input('Re-hit enter to confirm:>')
 
 ###ADD NEW LIST TO FULL LIST
-copy('Full List.xlsx', f'{metadata_folder}Full List before new entries.xlsx')
-active = pd.read_excel(f'{folder}Add Categories.xlsx')
-#active.drop(['Additional Information', 'Archivist Notes'], axis=1, inplace = True)
-frames = [pd.read_excel(f'Full List.xlsx')] + [active]
-full_list = pd.concat(frames, ignore_index=True)
-full_list.drop_duplicates(subset='Archive URL', keep='last')
+while True:
+    try:
+        copy('Full List.xlsx', f'{metadata_folder}Full List before new entries.xlsx')
+        active = pd.read_excel(f'{folder}Add Categories.xlsx')
+        #active.drop(['Additional Information', 'Archivist Notes'], axis=1, inplace = True)
+        frames = [pd.read_excel(f'Full List.xlsx')] + [active]
+        full_list = pd.concat(frames, ignore_index=True)
+        full_list.drop_duplicates(subset='Archive URL', keep='last')
 
-os.replace(f'{folder}Add Categories.xlsx', f'{metadata_folder}Newly Added to Full List.xlsx')
-#SORT COLUMN
-full_list['sort'] = full_list['Site Name'].apply(lambda x: x.lower().replace('the ', '') if x[:3].lower() == 'the' else x.lower())
-full_list = full_list.sort_values('sort')
-full_list = full_list.reset_index(drop=True)
+        os.replace(f'{folder}Add Categories.xlsx', f'{metadata_folder}Newly Added to Full List.xlsx')
+        #SORT COLUMN
+        full_list['sort'] = full_list['Site Name'].apply(lambda x: x.lower().replace('the ', '') if x[:3].lower() == 'the' else x.lower())
+        full_list = full_list.sort_values('sort')
+        full_list = full_list.reset_index(drop=True)
+        break
+    except Exception as e:
+        print(e)
+        input('Make sure all files are closed, hit enter when they are:>')
+
 
 #####Wrtie new full list
 wb = pxl.Workbook()
@@ -141,6 +152,7 @@ for r in dataframe_to_rows(full_list, index=False, header=True):
 
 wb.save(f'Full List.xlsx')
 
+full_list = input('Before the HTML is written you can check through the Full List in the A-Z list folder for errors.\nWhen you\'re happy, close the Full List and hit enter:>')
 
 #####WRITE HTML
 ABC = 'abcdefghijklmnopqrstuvwxyz'
@@ -172,7 +184,7 @@ with open(f'{folder}A-Z list HTML.txt', 'w', encoding='utf-8') as dest:
     dest.write(text)
 
 
-final = input('You can now check the results. If you\'d like to undo the process, type \'undo\':')
+final = input('You can now check the results. To confirm them and commit the changes to GitHub hit enter.\nIf you\'d like to undo the process, type \'undo\':')
 
 if final.lower() == 'undo':
     os.remove('Full List.xlsx')
