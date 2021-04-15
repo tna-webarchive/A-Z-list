@@ -84,10 +84,12 @@ def first_capture(archive_url):
     return False
 
 ####Load and clean Harvesting Summary
+full_list = pd.read_excel(f'Full List.xlsx') ###IGNORE IF ALREADY IN LIST?
 new_sites = pd.read_csv(f'{metadata_folder}Harvesting Summary.csv')
 new_sites['Additional Information'] = ''
 new_sites.rename(columns={'textbox20': 'URL', 'textbox22': 'Site Name', 'textbox26': 'Archivist Notes', 'Dept_acronym': 'Department'}, inplace=True)
 new_sites['Archive URL'] = new_sites['URL'].apply(UKGWA_URL)
+new_sites = new_sites[~new_sites['Archive URL'].isin(full_list['Archive URL'])]
 
 #####BACK UPS
 copy('not_active.csv', f'{metadata_folder}not_active prev.csv')
@@ -142,7 +144,7 @@ When finished, close and save spreadsheet and hit enter here:>''')
     cataloguing.to_excel(f'{folder}Verification.xlsx')
     os.rename(f'{folder}Verification.xlsx', f'{folder}cataloguing.xlsx')
     verified['Date Range'] = verified['From'].str.cat(verified['To'], sep=' - ')
-    for_full_list = verified[['Archive URL', 'Site Name', 'Date Range',
+    to_full_list = verified[['Archive URL', 'Site Name', 'Date Range',
                               'Department', 'Category #1', 'Category #2',
                               'Category #3', 'Category #4', 'Category #5',
                               'Category #6', 'Additional Information',
@@ -151,10 +153,10 @@ When finished, close and save spreadsheet and hit enter here:>''')
     ###ADD NEW LIST TO FULL LIST
     while True:
         try:
-            frames = [pd.read_excel(f'Full List.xlsx')] + [for_full_list]
+            frames = [full_list] + [to_full_list]
             full_list = pd.concat(frames, ignore_index=True)
-            full_list.drop_duplicates(subset='Archive URL', keep='last', inplace=True)
-            for_full_list.to_csv(f'{metadata_folder}Newly Added to Full List.xlsx', quotechar='"')
+            full_list.drop_duplicates(subset='Archive URL', keep='last', inplace=True) ####superfluous
+            to_full_list.to_csv(f'{metadata_folder}Newly Added to Full List.xlsx', quotechar='"')
             #SORT COLUMN
             full_list['sort'] = full_list['Site Name'].apply(lambda x: x.lower().replace('the ', '') if x[:3].lower() == 'the' else x.lower())
             full_list['sort'] = full_list['sort'].apply(lambda x: x.strip(string.punctuation))
@@ -167,12 +169,13 @@ When finished, close and save spreadsheet and hit enter here:>''')
 
 
     #####Wrtie new full list
-    wb = pxl.Workbook()
-    ws = wb.active
-    for r in dataframe_to_rows(full_list, index=False, header=True):
-        ws.append(r)
-
-    wb.save(f'Full List.xlsx')
+    # wb = pxl.Workbook()
+    # ws = wb.active
+    # for r in dataframe_to_rows(full_list, index=False, header=True):            ###pd.to_excel?!?!?
+    #     ws.append(r)
+    #
+    # wb.save(f'Full List.xlsx')
+    full_list.to_excel('Full List.xlsx')
 
     while 'confirm' not in input('\n  Type "confirm" to save and push update. Hit enter to UNDO process.>').lower():
         if input(f'''\nWARNING: Edited Site Names and Categories will be lost 
