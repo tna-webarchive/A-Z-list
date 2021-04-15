@@ -175,7 +175,7 @@ When finished, close and save spreadsheet and hit enter here:>''')
     #     ws.append(r)
     #
     # wb.save(f'Full List.xlsx')
-    full_list.to_excel('Full List.xlsx')
+    full_list.to_excel('Full List.xlsx', index=False, header=True)
 
     while 'confirm' not in input('\n  Type "confirm" to save and push update. Hit enter to UNDO process.>').lower():
         if input(f'''\nWARNING: Edited Site Names and Categories will be lost 
