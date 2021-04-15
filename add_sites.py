@@ -189,7 +189,7 @@ WARNING: unless '{metadata_folder}Verified New sites.xlsx' is saved elsewhere.
     os.system('git push')
 
     if input('   Generate HTML?>[y/n]').lower() == 'y':
-        os.system(f'python generateHTML.py {folder}')
+        os.system(f'python generateHTML.py {folder}A-Z list HTML')
         print(f'HTML located in {folder}A-Z list HTML.txt')
 
     print('PROCESS COMPLETE')

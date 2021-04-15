@@ -1,7 +1,7 @@
 import pandas as pd
 import sys
 
-folder = sys.argv[1]
+destination = sys.argv[1]
 full_list = pd.read_excel('Full List.xlsx')
 
 #####WRITE HTML
@@ -30,5 +30,5 @@ text += '\n'.join(lines)
 text += '\n\n</ul>'
 
 
-with open(f'{folder}A-Z list HTML.txt', 'w', encoding='utf-8') as dest:
+with open(f'{destination}', 'w', encoding='utf-8') as dest:
     dest.write(text)
