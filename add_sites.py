@@ -117,7 +117,6 @@ try:
     active_sites['Added to Full List'] = [today] * len(active_sites)
     wb = pxl.Workbook()
     ws = wb.active
-
     for r in dataframe_to_rows(active_sites, index=False, header=True):
         ws.append(r)
 
@@ -141,7 +140,7 @@ When finished, close and save spreadsheet and hit enter here:>''')
     verified = pd.read_excel(f'{folder}Verification.xlsx')
     copy(f'{folder}Verification.xlsx', f'{metadata_folder}Verified New sites.xlsx')
     cataloguing = verified.drop(columns=['Added to Full List', 'Archivist Notes'])
-    cataloguing.to_excel(f'{folder}Verification.xlsx')
+    cataloguing.to_excel(f'{folder}Verification.xlsx', index=False, )
     os.rename(f'{folder}Verification.xlsx', f'{folder}cataloguing.xlsx')
     verified['Date Range'] = verified['From'].str.cat(verified['To'], sep=' - ')
     to_full_list = verified[['Archive URL', 'Site Name', 'Date Range',
@@ -181,14 +180,14 @@ When finished, close and save spreadsheet and hit enter here:>''')
         if input(f'''\nWARNING: Edited Site Names and Categories will be lost 
 WARNING: unless '{metadata_folder}Verified New sites.xlsx' is saved elsewhere.
         
-        Type "confirm" to undo whole process.>''').lower() == 'confirm':
+        Type "confirm" to UNDO whole process.>''').lower() == 'confirm':
             raise Exception('Reverting to Prior State')
 
     os.system('git add "Full List.xlsx" not_active.csv')
     os.system(f'git commit -m "Updated for {folder[16:-1]}"')
     os.system('git push')
 
-    if input('   Generate HTML?>[y/n]').lower() == 'y':
+    if input('\n   Generate HTML?>[y/n]').lower() == 'y':
         os.system(f'python generateHTML.py {folder}A-Z list HTML')
         print(f'HTML located in {folder}A-Z list HTML.txt')
 

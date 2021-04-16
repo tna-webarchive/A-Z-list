@@ -3,3 +3,4 @@ tqdm
 openpyxl
 bs4
 requests
+python-dotenv
