@@ -1,6 +1,8 @@
 import pandas as pd
 import sys
 
+
+### Takes argument from command line
 destination = sys.argv[1]
 full_list = pd.read_excel('Full List.xlsx')
 
@@ -12,6 +14,7 @@ body = ' <li><a title="This link opens in a new window" href="{URL}" target="_bl
 with open('HTML_template.txt', 'r') as source:
     text = source.read()
 
+#### Goes through each letter, writing the relevant HTML lines.
 for letter in ABC:
     section = full_list[full_list['sort'].str.startswith(letter)]
     if len(section) > 0:

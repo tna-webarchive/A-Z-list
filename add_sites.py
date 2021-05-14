@@ -11,17 +11,19 @@ from openpyxl.worksheet.datavalidation import DataValidation
 import urllib.parse
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
+## Defining variables NOTE: user and password are kept in dotenv file. Only necessary if using NOTD api.
 NOTDuser = os.getenv('NOTDuser')
 NOTDpassword = os.getenv('NOTDpassword')
 today = date.today().strftime("%d/%m/%Y")
 working_dir = os.getcwd()
-folder = 'New URLs between ' +  input('New URLs between>') + '/'
+folder = 'New URLs between ' +  input('New URLs between> ') + '/'
 metadata_folder = folder+'metadata/'
 
-#SET UP
+###SET UP - Creating folders
 while not os.path.isfile('Harvesting Summary.csv'):
     new_sites = input(f'Unable to locate Harvesting Summary.csv file. Please add Harvesting summary to folder {working_dir}')
 
@@ -33,7 +35,9 @@ if not os.path.isdir(metadata_folder):
 
 os.replace('Harvesting Summary.csv', f'{metadata_folder}Harvesting Summary.csv')
 
-def UKGWA_URL(url):
+def UKGWA_URL(url: str) -> str:
+    """Creates a UKGWA URL from a standard URL
+    (Includes Social Media URLs)"""
     social = {'twitter.com': 'twitter',
               'flickr.com': 'flickr',
               'youtube.com': 'video'}
@@ -42,23 +46,29 @@ def UKGWA_URL(url):
 
     if domain in social:
         channel = url[:-1].split('/')[-1] + url[-1]     ### takes last character off before splitting in case it is a slash '/'. Appends after split
-        return f'https://webarchive.nationalarchives.gov.uk/{social[domain]}/{channel}'
+        return f'https://webarchive.nationalarchives.gov.uk/{social[domain]}/{channel}'.strip()
     else:
-        return f'https://webarchive.nationalarchives.gov.uk/*/{url}'
+        return f'https://webarchive.nationalarchives.gov.uk/*/{url}'.strip()
 
 
-def first_capture(archive_url):
-    if '/*/' in archive_url:
+def first_capture(archive_url: str) -> str:
+    """Gets the year and month of the first capture of any URL
+    Date is return in MONTH YEAR format e.g. 'July 2016'
+
+    Function sleeps for 0.3 seconds to limit rate of requests."""
+    time.sleep(0.3)
+    if '/*/' in archive_url:    ## CDX API Query
         url = archive_url.split('/*/')[1]
-        query = f'http://tnaqanotd.mirrorweb.com/published-cdx?url={urllib.parse.quote(url)}&fields=timestamp&limit=1'
-        #query = f'https://webarchive.nationalarchives.gov.uk/largefiles-cdx?url={urllib.parse.quote(url)}&fields=timestamp&limit=1'
-        r = requests.get(query, allow_redirects=False, auth=(NOTDuser, NOTDpassword))
+        #query = f'http://tnaqanotd.mirrorweb.com/published-cdx?url={urllib.parse.quote(url)}&fields=timestamp&limit=1'
+        query = f'https://webarchive.nationalarchives.gov.uk/largefiles-cdx?url={urllib.parse.quote(url)}&fields=timestamp'
+        r = requests.get(query, allow_redirects=False)#, auth=(NOTDuser, NOTDpassword))
         if r.status_code == 200:
             date = r.text[:6]
             date = datetime.strptime(date, '%Y%m')
             date_string = date.strftime('%B %Y')
             return date_string
     else:
+        ## Scrapes social media page for first Date of capture.
         try:
             r = requests.get(archive_url+'?sort=date_oldest', timeout=30)
             soup = BeautifulSoup(r.text, 'html.parser')
@@ -81,7 +91,7 @@ def first_capture(archive_url):
             return date_string
         except:
             pass
-    return False
+    return False        #TODO: Add Report Error fucntion if request fails.
 
 ####Load and clean Harvesting Summary
 full_list = pd.read_excel(f'Full List.xlsx') ###IGNORE IF ALREADY IN LIST?
@@ -110,7 +120,7 @@ try:
 
     ######CREATE ACTIVE URLs XLSX
     active_sites = to_check[to_check['From'] != False]
-    active_sites['To'] = ['Ongoing'] * len(active_sites)
+    active_sites['To'] = 'Ongoing'
     active_sites = active_sites[['Archive URL', 'Site Name', 'From', 'To', 'Additional Information', 'Archivist Notes', 'Department']]  ####define columns
     for x in range(1, 7):
         active_sites[f'Category #{x}'] = ''
@@ -139,11 +149,12 @@ When finished, close and save spreadsheet and hit enter here:>''')
     ###Create cataloguing sheet
     verified = pd.read_excel(f'{folder}Verification.xlsx')
     copy(f'{folder}Verification.xlsx', f'{metadata_folder}Verified New sites.xlsx')
-    cataloguing = verified.drop(columns=['Added to Full List', 'Archivist Notes'])
+    cataloguing = verified.drop(columns=['Added to Full List', 'Archivist Notes','Category #1',
+                                         'Category #2', 'Category #3', 'Category #4', 'Category #5',
+                                         'Category #6'])
     cataloguing.to_excel(f'{folder}Verification.xlsx', index=False, )
     os.rename(f'{folder}Verification.xlsx', f'{folder}cataloguing.xlsx')
-    verified['Date Range'] = verified['From'].str.cat(verified['To'], sep=' - ')
-    to_full_list = verified[['Archive URL', 'Site Name', 'Date Range',
+    to_full_list = verified[['Archive URL', 'Site Name', 'From', 'To',
                               'Department', 'Category #1', 'Category #2',
                               'Category #3', 'Category #4', 'Category #5',
                               'Category #6', 'Additional Information',
@@ -167,16 +178,11 @@ When finished, close and save spreadsheet and hit enter here:>''')
             input('Make sure all files are closed, hit enter when they are:>')
 
 
-    #####Wrtie new full list
-    # wb = pxl.Workbook()
-    # ws = wb.active
-    # for r in dataframe_to_rows(full_list, index=False, header=True):            ###pd.to_excel?!?!?
-    #     ws.append(r)
-    #
-    # wb.save(f'Full List.xlsx')
     full_list.to_excel('Full List.xlsx', index=False, header=True)
 
-    while 'confirm' not in input('\n  Type "confirm" to save and push update. Hit enter to UNDO process.>').lower():
+
+### Commit Changes
+    while 'commit' not in input('\n  Type "commit" to save and push update. Hit enter to UNDO process.>').lower():
         if input(f'''\nWARNING: Edited Site Names and Categories will be lost 
 WARNING: unless '{metadata_folder}Verified New sites.xlsx' is saved elsewhere.
         
@@ -187,12 +193,14 @@ WARNING: unless '{metadata_folder}Verified New sites.xlsx' is saved elsewhere.
     os.system(f'git commit -m "Updated for {folder[16:-1]}"')
     os.system('git push')
 
+#### Generate HTML
     if input('\n   Generate HTML?>[y/n]').lower() == 'y':
-        os.system(f'python generateHTML.py {folder}A-Z list HTML')
-        print(f'HTML located in "{folder}A-Z list HTML.txt"')
+        os.system(f'python generateHTML.py {folder}A-Z-HTML.html')
+        print(f'HTML located in "{folder}A-Z-HTML.html"')
 
     print('PROCESS COMPLETE')
 
+### Reverts to prior state
 except Exception as e:
     print(e)
     copy(f'{metadata_folder}Full List prev.xlsx', 'Full List.xlsx')
