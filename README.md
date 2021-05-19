@@ -1,6 +1,6 @@
-#Process#
-##Adding Sites##
-###Getting Harvesting Summary###
+# Process
+## Adding Sites
+### Getting Harvesting Summary
 
 * Open the GWDB Reporting Tool ‘Harvesting Summary’
 
@@ -18,7 +18,7 @@
 
 * Ensure it is called 'Harvesting Summary.csv'
 
-###Adding Sites to Full List###
+### Adding Sites to Full List
 * With the Harvesting Summary saved in the A-Z list, open the folder in temrinal.
 
 * Paste the following commands: (NOTE: Python3 is the newer version of python, you might have to swap ‘python3’ for ‘python’)
@@ -58,7 +58,7 @@
 
 * Anything else will exit the process here. You can always generate the HTML another time without adding new sites.
 
-##Generating HTML##
+## Generating HTML
 * To Generate the HTML outside of the ‘Add sites’ process:
 
 * Open terminal in the A-Z list directory
