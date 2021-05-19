@@ -29,11 +29,11 @@
 * Paste the following commands: (NOTE: Python3 is the newer version of python, you might have to swap ‘python3’ for ‘python’)
 
   `<git pull
-    python add_sites.py>`
+    python add_sites.py`
 * A prompt will pop up:
 
 
-`<New URLs between>`
+`New URLs between`
 * Enter the date range which will become the session’s folder name e.g. ‘URLs between 01012021- 01032021’
 
 * An excel document called ‘Verification.xlsx’ will be created containing sites which are found to be active in the archive.
@@ -70,15 +70,15 @@
 
 * Determine where you’d like the HTML file to be located once it has been created. 
 
-* Enter: `<python3 generateHTML.py <path to destination>>`
+* Enter: `python3 generateHTML.py <path to destination`
 
 * where <path to destination> is replaced by the path to the file you’d like to create. For example to create the HTML in downloads I would type:
 
-`<python3 generateHTML.py C:\Users\micha\Downloads\A-Z-HTML.html>`
+`python3 generateHTML.py C:\Users\micha\Downloads\A-Z-HTML.html`
 
 * To create it in the A-Z-list folder you can just type the name of the HTML file e.g.
 
-`<python3 generateHTML.py A-Z-HTML.html>`
+`python3 generateHTML.py A-Z-HTML.html`
 
  
 # A note on requirements.txt
