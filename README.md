@@ -28,8 +28,8 @@
 
 * Paste the following commands: (NOTE: Python3 is the newer version of python, you might have to swap ‘python3’ for ‘python’)
 
-  `<git pull
-    python add_sites.py`
+  `git pull
+   python add_sites.py`
 * A prompt will pop up:
 
 
