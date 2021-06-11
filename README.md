@@ -51,6 +51,8 @@
 
 * At this point the Full List will be updated to include the new sites.
 
+* **If you have other changes to make to the Full List, make them at this point.  (before committing to GitHub)**
+
 * You will have a chance to undo this process. Undoing will rollback all changes to prior state, i.e. step 7.
 
 * **WARNING: Undoing the process will mean losing the Site names and Categories you have added. To keep them but undo the Full List update, move the ‘Verified New Sites.xlsx’ file to another location.** 
