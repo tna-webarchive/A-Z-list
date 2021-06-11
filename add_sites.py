@@ -195,7 +195,7 @@ WARNING: unless '{metadata_folder}Verified New sites.xlsx' is saved elsewhere.
 
 #### Generate HTML
     if input('\n   Generate HTML?>[y/n]').lower() == 'y':
-        os.system(f'python generateHTML.py {folder}A-Z-HTML.html')
+        os.system(f'python generateHTML.py "{folder}A-Z-HTML.html"')
         print(f'HTML located in "{folder}A-Z-HTML.html"')
 
     print('PROCESS COMPLETE')
