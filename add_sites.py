@@ -166,7 +166,7 @@ When finished, close and save spreadsheet and hit enter here:>''')
             frames = [full_list] + [to_full_list]
             full_list = pd.concat(frames, ignore_index=True)
             full_list.drop_duplicates(subset='Archive URL', keep='last', inplace=True) ####superfluous
-            to_full_list.to_csv(f'{metadata_folder}Newly Added to Full List.xlsx', quotechar='"')
+            to_full_list.to_csv(f'{metadata_folder}Newly Added to Full List.csv', quotechar='"')
             #SORT COLUMN
             full_list['sort'] = full_list['Site Name'].apply(lambda x: x.lower().replace('the ', '') if x[:3].lower() == 'the' else x.lower())
             full_list['sort'] = full_list['sort'].apply(lambda x: x.strip(string.punctuation))
