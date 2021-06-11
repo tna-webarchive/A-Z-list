@@ -1,9 +1,10 @@
 import pandas as pd
-import sys
+import sys, os
 
 
 ### Takes argument from command line
 destination = sys.argv[1]
+os.system('git pull')
 full_list = pd.read_excel('Full List.xlsx')
 
 #####WRITE HTML
