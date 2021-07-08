@@ -4,7 +4,6 @@ import sys, os
 
 ### Takes argument from command line
 destination = sys.argv[1]
-os.system('git pull')
 full_list = pd.read_excel('Full List.xlsx')
 
 #####WRITE HTML
@@ -12,7 +11,7 @@ ABC = 'abcdefghijklmnopqrstuvwxyz'
 head = '<h2 name="{lower}">{upper}</h2>'
 body = ' <li><a title="This link opens in a new window" href="{URL}" target="_blank" rel="noopener noreferrer">{name}</a></li>'
 
-with open('HTML_template.txt', 'r') as source:
+with open('helpers/HTML_template.txt', 'r') as source:
     text = source.read()
 
 #### Goes through each letter, writing the relevant HTML lines.
@@ -33,6 +32,8 @@ lines = full_list.apply(lambda x: body.replace('{URL}', x['Archive URL']).replac
 text += '\n'.join(lines)
 text += '\n\n</ul>'
 
-
-with open(f'{destination}', 'w', encoding='utf-8') as dest:
-    dest.write(text)
+try:
+    with open(f'{destination}', 'w', encoding='utf-8') as dest:
+        dest.write(text)
+except Exception as e:
+    raise e

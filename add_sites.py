@@ -15,32 +15,40 @@ from bs4 import BeautifulSoup
 import time
 import logging
 
-import logg
-from dotenv import load_dotenv
+from helpers import logg
+from env import config
 
-load_dotenv()
 
 ## Defining variables NOTE: user and password are kept in dotenv file. Only necessary if using NOTD api.
-NOTDuser = os.getenv('NOTDuser')
-NOTDpassword = os.getenv('NOTDpassword')
 today = date.today().strftime("%d/%m/%Y")
 working_dir = os.getcwd()
 folder = 'New URLs between ' +  input('New URLs between> ') + '/'
 metadata_folder = folder+'metadata/'
-source = 'Harvesting Summary.csv'
 
 ###SET UP - Creating folders
 logger = logging.getLogger()
 logger.setLevel(10)
 logg.configure_handlers(logger, f'{metadata_folder}logs/')      #Configures logs and creates folder and metadata folder.
-logger.addHandler(logg.create_StreamHandler(sys.stdout, 40))
+logger.addHandler(logg.create_StreamHandler(sys.stdout, 40, format='%(message)s'))
 
 logger.debug('Creating Folders')
-while not os.path.isfile(source):
-    logger.error('No Harvesting Summary.csv file')
-    input(f'Unable to locate Harvesting Summary.csv file. Please add Harvesting summary to folder {working_dir}')
+try:
+    while len([x for x in os.listdir('Harvesting Summary') if x[-4:] == '.csv']) != 1:
+        if len([x for x in os.listdir('Harvesting Summary') if x[-4:] == '.csv']) > 1:
+            logger.error('Too many CSVs in Harvesting Summary folder')
+        elif len([x for x in os.listdir('Harvesting Summary') if x[-4:] == '.csv']) < 1:
+            logger.error('No CSVs in Harvesting Summary folder')
+        input('\nPlease add Harvesting Summary csv to Harvesting Summary Directory and hit enter:>')
 
-os.replace(source, f'{metadata_folder}Harvesting Summary.csv')
+    source = f'Harvesting Summary/{[x for x in os.listdir("Harvesting Summary") if x[-4:] == ".csv"][0]}'
+
+    os.replace(source, f'{metadata_folder}Harvesting Summary.csv')
+
+except:
+    logger.exception('Error, Aborting process and reverting to prior state.')
+    [x.close() for x in logger.handlers]
+    rmtree(folder)
+    raise Exception('Process Aborted. Changes rolled back.')
 
 def UKGWA_URL(url: str) -> str:
     """Creates a UKGWA URL from a standard URL
@@ -70,7 +78,7 @@ def first_capture(archive_url: str) -> str:
         #query = f'http://tnaqanotd.mirrorweb.com/published-cdx?url={urllib.parse.quote(url)}&fields=timestamp&limit=1'
         query = f'https://webarchive.nationalarchives.gov.uk/largefiles-cdx?url={urllib.parse.quote(url)}&fields=timestamp'
         try:
-            r = requests.get(query, allow_redirects=False)#, auth=(NOTDuser, NOTDpassword))
+            r = requests.get(query, allow_redirects=False)#, auth=(config.NOTDuser, config.NOTDpassword))
             logger.debug(f'{archive_url} response code: {r.status_code}')
             if r.status_code == 200:
                 date = r.text[:6]
@@ -228,17 +236,21 @@ WARNING: unless '{metadata_folder}Verified New sites.xlsx' is saved elsewhere.
 #### Generate HTML
     logger.debug('User decision- create HTML?')
     if input('\n   Generate HTML?>[y/n]').lower() == 'y':
-        logger.debug(f'Creating HTML at {folder}A-Z-HTML.html')
-        os.system(f'python generateHTML.py "{folder}A-Z-HTML.html"')
-        print(f'HTML located in "{folder}A-Z-HTML.html"')
+        try:
+            logger.debug(f'Creating HTML at {folder}A-Z-HTML.html')
+            os.system(f'python generateHTML.py "{folder}A-Z-HTML.html"')
+            print(f'HTML located in "{folder}A-Z-HTML.html"')
+        except:
+            logger.exception('''Failed to Produce HTML.
+Follow Instructions on WIKI to generate HTML outside of this process.
+(https://ukgwa.atlassian.net/wiki/spaces/GUID/pages/1169620993/Creating+A-Z+list+HTML)''')
 
     print('PROCESS COMPLETE')
 
 ### Reverts to prior state
 except Exception as e:
-    logger.exception('Process Errored or intentionally Interupted. Rolling Back')
+    logger.exception('Process Errored or intentionally Interrupted. Rolling Back')
     logger.info('Rolling back To original state.')
-    print(e)
     copy(f'{metadata_folder}Full List prev.xlsx', 'Full List.xlsx')
     copy(f'{metadata_folder}Harvesting Summary.csv', source)
     copy(f'{metadata_folder}not_active prev.csv', 'not_active.csv')
