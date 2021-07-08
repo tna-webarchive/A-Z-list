@@ -19,9 +19,8 @@
 
 * Click the ‘View Report’ button in the top right hand corner.
 
-* Export as a csv file and save it in the A-Z-list directory
+* Export as a csv file and save it in the Harvesting Summary folder in the A-Z-list directory
 
-* Ensure it is called 'Harvesting Summary.csv'
 
 ### Adding Sites to Full List
 * With the Harvesting Summary saved in the A-Z list, open the folder in temrinal.
