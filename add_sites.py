@@ -63,7 +63,7 @@ def UKGWA_URL(url: str) -> str:
         channel = url[:-1].split('/')[-1] + url[-1]     ### takes last character off before splitting in case it is a slash '/'. Appends after split
         return f'https://webarchive.nationalarchives.gov.uk/{social[domain]}/{channel}'.strip()
     else:
-        return f'https://webarchive.nationalarchives.gov.uk/*/{url}'.strip()
+        return f'https://webarchive.nationalarchives.gov.uk/ukgwa/*/{url}'.strip()
 
 
 def first_capture(archive_url: str) -> str:
@@ -75,8 +75,8 @@ def first_capture(archive_url: str) -> str:
     logger.debug(f'Getting First Capture of {archive_url}')
     if '/*/' in archive_url:    ## CDX API Query
         url = archive_url.split('/*/')[1]
-        #query = f'http://tnaqanotd.mirrorweb.com/published-cdx?url={urllib.parse.quote(url)}&fields=timestamp&limit=1'
-        query = f'https://webarchive.nationalarchives.gov.uk/largefiles-cdx?url={urllib.parse.quote(url)}&fields=timestamp'
+        #query = f'http://tnaqanotd.mirrorweb.com/published-cdx?url={urllib.parse.quote(url)}&fields=timestamp&limit=1' #out of date.
+        query = f'https://webarchive.nationalarchives.gov.uk/ukgwa/cdx?url={urllib.parse.quote(url)}&fields=timestamp&limit=1&output=text'
         try:
             r = requests.get(query, allow_redirects=False)#, auth=(config.NOTDuser, config.NOTDpassword))
             logger.debug(f'{archive_url} response code: {r.status_code}')
