@@ -121,6 +121,7 @@ full_list = pd.read_excel(f'Full List.xlsx') ###IGNORE IF ALREADY IN LIST?
 new_sites = pd.read_csv(f'{metadata_folder}Harvesting Summary.csv')
 new_sites.loc[:, 'Additional Information'] = ''
 new_sites.rename(columns={'textbox20': 'URL', 'textbox22': 'Site Name', 'textbox26': 'Archivist Notes', 'Dept_acronym': 'Department'}, inplace=True)
+new_sites.dropna(subset=['URL'], inplace=True)
 new_sites.loc[:, 'Archive URL'] = new_sites['URL'].apply(UKGWA_URL)
 new_sites = new_sites[~new_sites['Archive URL'].isin(full_list['Archive URL'])]
 
@@ -149,6 +150,10 @@ try:
     ######CREATE ACTIVE URLs XLSX
     logger.debug('Configuring active_sites list')
     active_sites = to_check[to_check['From'] != ''].loc[:]
+    if len(active_sites) == 0:
+        print('No newly published sites to add.\nExiting Process.')
+        exit(0)
+
     active_sites.loc[:, 'To'] = 'Ongoing'
     active_sites = active_sites[['Archive URL', 'Site Name', 'From', 'To', 'Additional Information', 'Archivist Notes', 'Department']]  ####define columns
     for x in range(1, 7):
@@ -179,24 +184,24 @@ When finished, close and save spreadsheet and hit enter here:>''')
     input('\nRe-hit enter to confirm:>')
 
     ###Create cataloguing sheet
-    logger.debug('Creating Cataloguing Sheet')
-    verified = pd.read_excel(f'{folder}Verification.xlsx')
-    copy(f'{folder}Verification.xlsx', f'{metadata_folder}Verified New sites.xlsx')
-    cataloguing = verified.drop(columns=['Added to Full List', 'Archivist Notes','Category #1',
-                                         'Category #2', 'Category #3', 'Category #4', 'Category #5',
-                                         'Category #6'])
-    cataloguing.to_excel(f'{folder}Verification.xlsx', index=False, )
-    os.rename(f'{folder}Verification.xlsx', f'{folder}cataloguing.xlsx')
-    to_full_list = verified[['Archive URL', 'Site Name', 'From', 'To',
-                              'Department', 'Category #1', 'Category #2',
-                              'Category #3', 'Category #4', 'Category #5',
-                              'Category #6', 'Additional Information',
-                              'Archivist Notes', 'Added to Full List']]
-
-    ###ADD NEW LIST TO FULL LIST
-    logger.debug('Updating Full list.xlsx')
     while True:
         try:
+            logger.debug('Creating Cataloguing Sheet')
+            verified = pd.read_excel(f'{folder}Verification.xlsx')
+            copy(f'{folder}Verification.xlsx', f'{metadata_folder}Verification.xlsx')
+            cataloguing = verified.drop(columns=['Added to Full List', 'Archivist Notes','Category #1',
+                                                 'Category #2', 'Category #3', 'Category #4', 'Category #5',
+                                                 'Category #6'])
+            cataloguing.to_excel(f'{folder}Verification.xlsx', index=False, )
+            os.rename(f'{folder}Verification.xlsx', f'{folder}cataloguing.xlsx')
+            to_full_list = verified[['Archive URL', 'Site Name', 'From', 'To',
+                                      'Department', 'Category #1', 'Category #2',
+                                      'Category #3', 'Category #4', 'Category #5',
+                                      'Category #6', 'Additional Information',
+                                      'Archivist Notes', 'Added to Full List']]
+
+    ###ADD NEW LIST TO FULL LIST
+            logger.debug('Updating Full list.xlsx')
             frames = [full_list] + [to_full_list]
             full_list = pd.concat(frames, ignore_index=True)
             full_list.drop_duplicates(subset='Archive URL', keep='last', inplace=True) ####superfluous
@@ -217,16 +222,17 @@ When finished, close and save spreadsheet and hit enter here:>''')
 
 ### Commit Changes
     logger.debug('user Decision- Commit Changes?')
+    print('''Updates configured to Full List.xlsx and not_active.csv. 
+You can check these updates before committing.''')
     while 'commit' not in input('''
-Updates configured to Full List.xlsx and not_active.csv. 
-You can check these updates before committing.
-
         Type "commit" to save and push update. Hit enter to UNDO process.>''').lower():
         if input(f'''\nWARNING: Edited Site Names and Categories will be lost 
 WARNING: unless '{metadata_folder}Verified New sites.xlsx' is saved elsewhere.
         
         Type "confirm" to UNDO whole process.>''').lower() == 'confirm':
             raise Exception('Reverting to Prior State')
+        else:
+            continue
 
     logger.debug('Pushing changes to Git Master.')
     os.system('git add "Full List.xlsx" not_active.csv')
